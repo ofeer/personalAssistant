@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 
 import httpx
 import jwt
@@ -21,14 +22,30 @@ _jwks_keys: dict[str, PyJWK] = {}
 
 
 def load_jwks() -> None:
+    """Fetch Supabase JWKS; retries help cold-start / DNS blips during deploy."""
     url = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
-    response = httpx.get(url, timeout=10)
-    response.raise_for_status()
-    for key_data in response.json()["keys"]:
-        kid = key_data.get("kid")
-        if kid:
-            _jwks_keys[kid] = PyJWK(key_data)
-    logger.info("Loaded %d JWKS signing keys from Supabase", len(_jwks_keys))
+    last_exc: Exception | None = None
+    for attempt in range(5):
+        try:
+            response = httpx.get(url, timeout=15)
+            response.raise_for_status()
+            for key_data in response.json()["keys"]:
+                kid = key_data.get("kid")
+                if kid:
+                    _jwks_keys[kid] = PyJWK(key_data)
+            logger.info("Loaded %d JWKS signing keys from Supabase", len(_jwks_keys))
+            return
+        except Exception as exc:
+            last_exc = exc
+            logger.warning(
+                "JWKS fetch attempt %d/5 failed: %s",
+                attempt + 1,
+                exc,
+            )
+            if attempt < 4:
+                time.sleep(min(2**attempt, 10))
+    assert last_exc is not None
+    raise last_exc
 
 
 async def get_current_user(

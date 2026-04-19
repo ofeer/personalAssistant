@@ -47,6 +47,12 @@ app.include_router(shopping_router, prefix="/api/v1")
 app.include_router(tasks_router, prefix="/api/v1")
 
 
+@app.get("/")
+async def root():
+    """Public root so health checks and quick smoke tests are not a 404."""
+    return {"status": "ok", "service": "personal-app-api"}
+
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
