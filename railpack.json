@@ -6,10 +6,10 @@
   },
   "steps": {
     "install": {
-      "commands": ["pip install -r backend/requirements.txt"]
+      "commands": ["pip install -r requirements.txt"]
     }
   },
   "deploy": {
-    "startCommand": "cd backend && exec python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"
+    "startCommand": "sh -c '[ -d backend ] && cd backend; exec python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT}'"
   }
 }
