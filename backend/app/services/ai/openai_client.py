@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 
 from openai import AsyncOpenAI, APIConnectionError, RateLimitError, APIStatusError
