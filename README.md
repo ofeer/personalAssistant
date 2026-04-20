@@ -40,3 +40,30 @@ npm run dev
 ### Database
 
 Run the SQL files in `/supabase/migrations/` against your Supabase project in order.
+
+## Railway Deployment (Frontend + Backend)
+
+Deploy this repo as two separate Railway services:
+
+1. `personalassistant-backend`
+   - Root Directory: `backend`
+   - Start Command: use `backend/Procfile` (auto-detected) or:
+     `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Required variables:
+     - `SUPABASE_URL`
+     - `SUPABASE_KEY`
+     - `SUPABASE_JWT_SECRET`
+     - `OPENAI_API_KEY` (if chat enabled)
+     - `FRONTEND_URL` = frontend Railway URL
+
+2. `personalassistant-frontend`
+   - Root Directory: `frontend`
+   - Start Command: use `frontend/Procfile` (auto-detected) or:
+     `npm run preview -- --host 0.0.0.0 --port $PORT`
+   - Required variables:
+     - `VITE_SUPABASE_URL`
+     - `VITE_SUPABASE_ANON_KEY`
+     - `VITE_API_BASE_URL` = backend URL + `/api/v1`
+
+Example:
+- `VITE_API_BASE_URL=https://personalassistant-backend.up.railway.app/api/v1`
